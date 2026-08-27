@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Meta Mahakam</title>
+    
+    <!-- Tailwind CSS untuk Styling Cepat & Modern -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js untuk Grafik -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Font Awesome untuk Ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc; /* Off-white */
+            color: #1e293b; /* Teks gelap */
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px;}
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        .glass-panel {
+            background: #ffffff; /* Latar panel putih */
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        .gradient-text {
+            background: -webkit-linear-gradient(45deg, #1e3a8a, #3b82f6); /* Gradient Biru Tua ke Biru Muda */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <nav class="bg-white sticky top-0 z-50 px-6 py-4 border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-blue-50 p-2 rounded-lg border border-blue-100">
+                    <i class="fa-solid fa-layer-group text-blue-600 text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-gray-800">Meta <span class="gradient-text">Mahakam</span></h1>
+                    <p class="text-xs text-blue-600 -mt-1 font-medium tracking-wider uppercase">HR Analytics Dashboard</p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <div id="status-badge" class="px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200 flex items-center gap-2">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Menghubungkan...
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow p-4 md:p-6 lg:p-8 max-w-7xl mx-auto w-full flex flex-col gap-6">
+        
+        <section class="glass-panel rounded-2xl p-5 flex flex-col md:flex-row gap-4 items-end">
+            <div class="w-full md:w-1/3">
+                <label class="block text-sm font-semibold text-slate-600 mb-1"><i class="fa-solid fa-map-location-dot mr-1 text-blue-500"></i> Filter Kota</label>
+                <select id="filterKota" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none shadow-sm cursor-pointer hover:bg-white transition">
+                    <option value="ALL">Semua Kota</option>
+                    <!-- Options di-generate via JS -->
+                </select>
+            </div>
+            <div class="w-full md:w-1/3">
+                <label class="block text-sm font-semibold text-slate-600 mb-1"><i class="fa-solid fa-building mr-1 text-blue-500"></i> Tempat Kerja</label>
+                <select id="filterTempat" class="w-full bg-slate-50 border border-slate-300 rounded-lg px-4 py-2.5 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none shadow-sm cursor-pointer hover:bg-white transition">
+                    <option value="ALL">Semua Tempat Kerja</option>
+                    <!-- Options di-generate via JS -->
+                </select>
+            </div>
+            <div class="w-full md:w-1/3 flex justify-end">
+                 <div class="bg-blue-50 rounded-lg px-5 py-2.5 border border-blue-200 flex items-center justify-between w-full shadow-sm">
+                    <span class="text-sm text-blue-800 font-semibold">Total Karyawan</span>
+                    <span id="total-karyawan-count" class="text-2xl font-bold brand-font text-blue-600">0</span>
+                 </div>
+            </div>
+        </section>
+
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Chart 1: Gender Distribution -->
+            <div class="glass-panel rounded-2xl p-6 flex flex-col items-center">
+                <h3 class="text-lg font-bold mb-4 text-slate-700 w-full text-left">Distribusi Gender</h3>
+                <div class="relative w-full h-64 flex justify-center">
+                    <canvas id="genderChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Average Salary by City -->
+            <div class="glass-panel rounded-2xl p-6">
+                <h3 class="text-lg font-bold mb-4 text-slate-700 w-full text-left">Rata-Rata Gaji per Kota</h3>
+                <div class="relative w-full h-64">
+                    <canvas id="salaryChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <section class="glass-panel rounded-2xl overflow-hidden flex flex-col">
+            <div class="p-6 border-b border-slate-200 flex justify-between items-center bg-white">
+                <h3 class="text-lg font-bold text-slate-800">Direktori Tenaga Kerja</h3>
+                <div class="flex gap-2">
+                    <button onclick="openModal()" class="text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors px-4 py-1.5 rounded-md shadow-sm">
+                        <i class="fa-solid fa-plus mr-1"></i> Tambah Data
+                    </button>
+                    <button onclick="fetchData()" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 px-3 py-1.5 rounded-md border border-blue-100">
+                        <i class="fa-solid fa-rotate-right mr-1"></i> Refresh
+                    </button>
+                </div>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                            <th class="p-4 font-bold border-b border-slate-200">Nama Lengkap</th>
+                            <th class="p-4 font-bold border-b border-slate-200">Gender</th>
+                            <th class="p-4 font-bold border-b border-slate-200">Durasi</th>
+                            <th class="p-4 font-bold border-b border-slate-200">Kota</th>
+                            <th class="p-4 font-bold border-b border-slate-200">Tempat Kerja</th>
+                            <th class="p-4 font-bold border-b border-slate-200 text-right">Gaji/Bulan</th>
+                            <th class="p-4 font-bold border-b border-slate-200 text-center">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="text-slate-700 text-sm bg-white">
+                        <tr>
+                            <td colspan="7" class="p-8 text-center text-slate-500">
+                                <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-blue-500"></i>
+                                <p>Mengambil data dari Spreadsheet...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Empty State -->
+            <div id="empty-state" class="hidden p-12 text-center text-slate-500 bg-white">
+                <i class="fa-solid fa-box-open text-4xl mb-3 text-slate-300"></i>
+                <p>Tidak ada data yang cocok dengan filter yang dipilih.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <div id="crudModal" class="fixed inset-0 bg-slate-900 bg-opacity-50 z-[60] hidden flex justify-center items-center backdrop-blur-sm transition-opacity">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <h3 id="modalTitle" class="text-lg font-bold text-slate-800">Tambah Data Baru</h3>
+                <button type="button" onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <form id="employeeForm" onsubmit="handleFormSubmit(event)" class="p-6 flex flex-col gap-4">
+                <input type="hidden" id="formRowId" value="">
+                
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Nama Lengkap</label>
+                    <input type="text" id="formNama" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Jenis Kelamin</label>
+                        <select id="formKelamin" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                            <option value="L">Laki-Laki (L)</option>
+                            <option value="P">Perempuan (P)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Durasi Kerja</label>
+                        <input type="text" id="formDurasi" required placeholder="Contoh: 2 Tahun" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Kota</label>
+                        <input type="text" id="formKota" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Tempat Kerja</label>
+                        <input type="text" id="formTempat" required placeholder="HO / Site A" class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Gaji / Bulan (Angka Saja)</label>
+                    <input type="number" id="formGaji" required class="w-full border border-slate-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+
+                <div class="mt-4 flex justify-end gap-3">
+                    <button type="button" onclick="closeModal()" class="px-4 py-2 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg font-medium transition-colors">Batal</button>
+                    <button type="submit" id="btnSubmitForm" class="px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-lg font-medium transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-save"></i> Simpan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // State Global
+        let globalData = [];
+        let filteredData = [];
+        let chartGenderInstance = null;
+        let chartSalaryInstance = null;
+
+        // Utilities
+        const formatRupiah = (number) => {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(number);
+        };
+
+        Chart.defaults.color = '#64748b'; // Teks Chart keabu-abuan
+        Chart.defaults.font.family = 'Inter';
+
+        window.onload = () => {
+            fetchData();
+            document.getElementById('filterKota').addEventListener('change', () => {
+                populateTempatFilter(); // Update dropdown tempat kerja berdasarkan kota yang dipilih
+                applyFilters();
+            });
+            document.getElementById('filterTempat').addEventListener('change', applyFilters);
+        };
+
+        function setStatus(status, type = 'loading') {
+            const badge = document.getElementById('status-badge');
+            if (type === 'loading') {
+                badge.className = 'px-3 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-600 border border-amber-200 flex items-center gap-2 shadow-sm';
+                badge.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ' + status;
+            } else if (type === 'success') {
+                badge.className = 'px-3 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center gap-2 shadow-sm';
+                badge.innerHTML = '<i class="fa-solid fa-check"></i> ' + status;
+            } else if (type === 'error') {
+                badge.className = 'px-3 py-1 rounded-full text-xs font-medium bg-red-50 text-red-600 border border-red-200 flex items-center gap-2 shadow-sm';
+                badge.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> ' + status;
+            }
+        }
+
+        function fetchData() {
+            setStatus('Sinkronisasi Google Sheets...');
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(handleDataReceived)
+                    .withFailureHandler(handleError)
+                    .getEmployeeData();
+            } else {
+                handleError("API Apps Script tidak ditemukan. Pastikan membuka aplikasi melalui URL Google Apps Script.");
+            }
+        }
+
+        function handleDataReceived(data) {
+            if (data && data.error) {
+                handleError(data.error);
+                return;
+            }
+            globalData = data;
+            populateCityFilter();
+            populateTempatFilter();
+            applyFilters();
+            setStatus('Terhubung', 'success');
+        }
+
+        function handleError(error) {
+            console.error("Error: ", error);
+            setStatus('Koneksi Gagal', 'error');
+            document.getElementById('table-body').innerHTML = `
+                <tr><td colspan="7" class="p-8 text-center text-red-500">
+                    <i class="fa-solid fa-circle-exclamation text-3xl mb-3"></i>
+                    <p class="font-medium">Kesalahan: ${error}</p>
+                </td></tr>
+            `;
+        }
+
+        function populateCityFilter() {
+            const select = document.getElementById('filterKota');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="ALL">Semua Kota</option>';
+            
+            const uniqueCities = [...new Set(globalData.map(item => item.kota))].sort();
+            uniqueCities.forEach(city => {
+                if(city && city.trim() !== "") {
+                    let option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    select.appendChild(option);
+                }
+            });
+            // Pertahankan filter kota sebelumnya jika ada
+            if(uniqueCities.includes(currentVal)) select.value = currentVal;
+        }
+
+        function populateTempatFilter() {
+            const select = document.getElementById('filterTempat');
+            const currentVal = select.value;
+            const kotaSelected = document.getElementById('filterKota').value;
+            
+            select.innerHTML = '<option value="ALL">Semua Tempat Kerja</option>';
+            
+            // Filter data untuk tempat kerja berdasarkan kota yang dipilih
+            const dataForTempat = kotaSelected === "ALL" 
+                ? globalData 
+                : globalData.filter(item => item.kota === kotaSelected);
+
+            const uniqueTempat = [...new Set(dataForTempat.map(item => item.tempatKerja))].sort();
+            uniqueTempat.forEach(tempat => {
+                if(tempat && tempat.trim() !== "") {
+                    let option = document.createElement('option');
+                    option.value = tempat;
+                    option.textContent = tempat;
+                    select.appendChild(option);
+                }
+            });
+            
+            // Pertahankan filter tempat kerja sebelumnya jika masih ada di daftar baru
+            if(uniqueTempat.includes(currentVal)) {
+                select.value = currentVal;
+            } else {
+                select.value = "ALL";
+            }
+        }
+
+        function applyFilters() {
+            const kotaSelected = document.getElementById('filterKota').value;
+            const tempatSelected = document.getElementById('filterTempat').value;
+
+            filteredData = globalData.filter(item => {
+                const matchKota = (kotaSelected === "ALL") || (item.kota === kotaSelected);
+                const matchTempat = (tempatSelected === "ALL") || (item.tempatKerja === tempatSelected);
+                return matchKota && matchTempat;
+            });
+
+            updateUI();
+        }
+
+        function updateUI() {
+            renderTable();
+            renderCharts();
+            document.getElementById('total-karyawan-count').textContent = filteredData.length;
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('table-body');
+            const emptyState = document.getElementById('empty-state');
+            tbody.innerHTML = '';
+
+            if (filteredData.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+            emptyState.classList.add('hidden');
+
+            filteredData.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition-colors";
+                
+                const genderInit = item.kelamin ? item.kelamin.toString().trim().toUpperCase().charAt(0) : "";
+                let genderIcon = item.kelamin;
+                if(genderInit === 'L') genderIcon = '<span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-md text-xs font-semibold"><i class="fa-solid fa-mars mr-1"></i> Laki-laki</span>';
+                else if (genderInit === 'P') genderIcon = '<span class="px-2.5 py-1 bg-indigo-100 text-indigo-700 rounded-md text-xs font-semibold"><i class="fa-solid fa-venus mr-1"></i> Perempuan</span>';
+
+                const gajiBersih = item.gaji ? item.gaji.toString().replace(/[^0-9]/g, '') : '0';
+                const gajiRaw = parseInt(gajiBersih, 10) || 0;
+
+                tr.innerHTML = `
+                    <td class="p-4 font-semibold text-slate-800">${item.nama || '-'}</td>
+                    <td class="p-4">${genderIcon}</td>
+                    <td class="p-4 text-slate-600">${item.durasiKerja || '-'}</td>
+                    <td class="p-4">${item.kota || '-'}</td>
+                    <td class="p-4 text-slate-600"><i class="fa-solid fa-building text-blue-500 mr-2 text-xs"></i>${item.tempatKerja || '-'}</td>
+                    <td class="p-4 text-right text-slate-800 font-bold font-mono">${formatRupiah(gajiRaw)}</td>
+                    <td class="p-4 text-center">
+                        <div class="flex justify-center gap-2">
+                            <button type="button" onclick='openModal(${JSON.stringify(item)})' class="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1.5 rounded transition-colors" title="Edit Data"><i class="fa-solid fa-pen-to-square"></i></button>
+                            <button type="button" onclick='deleteData(${item.rowId})' class="text-red-500 hover:text-red-700 hover:bg-red-50 p-1.5 rounded transition-colors" title="Hapus Data"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function renderCharts() {
+            if (chartGenderInstance) chartGenderInstance.destroy();
+            if (chartSalaryInstance) chartSalaryInstance.destroy();
+
+            let maleCount = 0;
+            let femaleCount = 0;
+            const citySalaryMap = {};
+
+            filteredData.forEach(item => {
+                const genderInit = item.kelamin ? item.kelamin.toString().trim().toUpperCase().charAt(0) : "";
+                if (genderInit === 'L') maleCount++;
+                if (genderInit === 'P') femaleCount++;
+
+                if (item.kota && item.kota.trim() !== "") {
+                    if (!citySalaryMap[item.kota]) citySalaryMap[item.kota] = { total: 0, count: 0 };
+                    
+                    const gajiBersih = item.gaji ? item.gaji.toString().replace(/[^0-9]/g, '') : '0';
+                    citySalaryMap[item.kota].total += (parseInt(gajiBersih, 10) || 0);
+                    citySalaryMap[item.kota].count += 1;
+                }
+            });
+
+            // 1. Gender Chart (Doughnut)
+            const ctxGender = document.getElementById('genderChart').getContext('2d');
+            chartGenderInstance = new Chart(ctxGender, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Laki-Laki', 'Perempuan'],
+                    datasets: [{
+                        data: [maleCount, femaleCount],
+                        backgroundColor: ['#3b82f6', '#bfdbfe'], // Biru Tua/Primary & Biru Sangat Muda
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: { legend: { position: 'bottom' } }
+                }
+            });
+
+            // 2. Salary Chart (Bar)
+            const ctxSalary = document.getElementById('salaryChart').getContext('2d');
+            
+            // Hitung rata-rata gaji dan urutkan
+            const cityAverages = Object.entries(citySalaryMap).map(([city, data]) => {
+                return [city, data.count > 0 ? data.total / data.count : 0];
+            }).sort((a, b) => b[1] - a[1]);
+
+            const cityLabels = cityAverages.map(entry => entry[0]);
+            const cityValues = cityAverages.map(entry => entry[1]);
+
+            chartSalaryInstance = new Chart(ctxSalary, {
+                type: 'bar',
+                data: {
+                    labels: cityLabels,
+                    datasets: [{
+                        label: 'Rata-Rata Gaji',
+                        data: cityValues,
+                        backgroundColor: '#3b82f6',
+                        borderRadius: 6,
+                        maxBarThickness: 40
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: { label: function(context) { return formatRupiah(context.raw); } }
+                        }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: { callback: function(value) { if(value >= 1000000) return (value / 1000000) + ' Jt'; return value; } }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function openModal(dataObj = null) {
+            const modal = document.getElementById('crudModal');
+            const form = document.getElementById('employeeForm');
+            form.reset();
+
+            if (dataObj && dataObj.rowId) {
+                document.getElementById('modalTitle').textContent = "Edit Data Karyawan";
+                document.getElementById('formRowId').value = dataObj.rowId;
+                document.getElementById('formNama').value = dataObj.nama || "";
+                document.getElementById('formKelamin').value = (dataObj.kelamin || "L").toString().toUpperCase().charAt(0);
+                document.getElementById('formDurasi').value = dataObj.durasiKerja || "";
+                document.getElementById('formKota').value = dataObj.kota || "";
+                document.getElementById('formTempat').value = dataObj.tempatKerja || "";
+                
+                // Membersihkan format string menjadi angka murni agar bisa masuk ke input type="number"
+                const gajiBersih = dataObj.gaji ? dataObj.gaji.toString().replace(/[^0-9]/g, '') : "";
+                document.getElementById('formGaji').value = gajiBersih;
+            } else {
+                document.getElementById('modalTitle').textContent = "Tambah Data Baru";
+                document.getElementById('formRowId').value = "";
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('crudModal').classList.add('hidden');
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btnSubmitForm');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menyimpan...';
+            btn.disabled = true;
+
+            const rowId = document.getElementById('formRowId').value;
+            const payload = {
+                nama: document.getElementById('formNama').value,
+                kelamin: document.getElementById('formKelamin').value,
+                durasiKerja: document.getElementById('formDurasi').value,
+                kota: document.getElementById('formKota').value,
+                tempatKerja: document.getElementById('formTempat').value,
+                gaji: document.getElementById('formGaji').value
+            };
+
+            setStatus('Menyimpan data...', 'loading');
+
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                if (rowId) {
+                    google.script.run
+                        .withSuccessHandler(res => finishCrud(res, btn, originalText))
+                        .withFailureHandler(err => finishCrudError(err, btn, originalText))
+                        .editEmployee(parseInt(rowId), payload);
+                } else {
+                    google.script.run
+                        .withSuccessHandler(res => finishCrud(res, btn, originalText))
+                        .withFailureHandler(err => finishCrudError(err, btn, originalText))
+                        .addEmployee(payload);
+                }
+            } else {
+                finishCrudError("API Google Apps Script tidak tersedia.", btn, originalText);
+            }
+        }
+
+        function deleteData(rowId) {
+            // Langsung hapus data saat tombol diklik (tanpa window confirm dialog)
+            setStatus('Menghapus data...', 'loading');
+            if (typeof google !== 'undefined' && google.script && google.script.run) {
+                google.script.run
+                    .withSuccessHandler(res => handleDataReceived(res))
+                    .withFailureHandler(handleError)
+                    .deleteEmployee(parseInt(rowId));
+            } else {
+                handleError("API Google Apps Script tidak tersedia.");
+            }
+        }
+
+        function finishCrud(res, btn, originalText) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            closeModal();
+            handleDataReceived(res);
+        }
+
+        function finishCrudError(err, btn, originalText) {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+            handleError(err);
+        }
+    </script>
+</body>
+</html>
